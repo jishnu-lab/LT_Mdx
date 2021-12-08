@@ -1,0 +1,115 @@
+
+rm(list = ls())
+cat("\014")
+
+setwd("/Users/sar210/Box/MDx_project/")
+# setwd("/Users/syedashiqurrahman/Box/MDx_project/")
+
+library(matrixStats)
+library(readxl)
+library(stringr)
+library(rapport)
+
+# data <- read.delim("preCombinedFinal.txt")
+# data <- read.delim("earlyCombinedFinal.txt")
+data <- read.delim("lateCombinedFinal.txt")
+
+Y <- data$Y
+# Zr <- subset(data, Y==1)
+# Znr <- subset(data, Y==0)
+
+# data <- read.csv("preCombinedFinal.csv")
+# data <- read.csv("earlyCombinedFinal.csv")
+# data <- read.csv("lateCombinedFinal.csv")
+
+
+modules <- read.csv("OutputClusterOne_s_5_d_6.csv")
+# modules <- read.csv("OutputClusterOne_s_6_d_5.csv")
+
+# features <- c("X69","X75","X136","X271","X333","X407","X423","X428","X435","X441","X448","X451","X467","X468","X500","X548")
+
+modules <- modules[-c(32, 81, 269, 302, 305, 422, 492),]
+
+tempModules <- modules
+
+M <- matrix(0, nrow=555, ncol=nrow(data))
+i <- 1
+# i <- 500
+# i <- 423
+# i <- 431
+for (i in 1:nrow(tempModules)) # for each module
+{
+  
+  module <- tempModules[i, ]
+  # if(unique(module[module != ""]))
+  module <- unique(module[module != ""])
+  
+  # module <- module[2:length(module)]
+  subDF <- data[ , names(data) %in% module]
+  # # removing features with 0's
+  # limit <- 0.1 * nrow(subDF)
+  # subDF <- subDF[, which(apply(subDF, 2, function(col) !any(table(col) > limit)))]
+  subDF <- cbind.data.frame(Y, subDF)
+  
+  Zr <- subset(subDF, Y==1)
+  Znr <- subset(subDF, Y==0)
+  muZr <- colMeans(Zr)
+  muZnr <- colMeans(Znr)
+  muZr <- muZr[c(2:length(muZr))]
+  muZnr <- muZnr[c(2:length(muZnr))]
+  
+  tempSubDF <- subDF[,-1]
+  m <- c()
+  N <- c()
+  SN <- c()
+  tempSign <- 1
+  for (k in 1:nrow(as.matrix(tempSubDF))) { # for each person
+    for (j in 1:ncol(as.matrix(tempSubDF))) { # for each gene
+      # m[j] <- log1p(((tempSubDF[k, j])^2)/(muZr[j]*muZnr[j]))
+      m[j] <- log2((tempSubDF[k, j]^2)/(muZr[j]*muZnr[j]))
+      # m[j] <- (tempSubDF[k, j])^2/(muZr[j]*muZnr[j])
+      m[j]
+      # tempSign <- tempSign * sign(m[j])
+      SN[j] <- sign(m[j])
+      
+    }
+    
+    m[!is.finite(m)] <- 0.0001    
+    
+    posSN <- 0
+    negSN <- 0
+    posSN <- sum(SN > 0, na.rm = T)
+    negSN <- sum(SN < 0, na.rm = T)
+  
+    m  <- abs(m)
+    
+    if (posSN > negSN){
+      N[k] <- sum(m)*1
+    } else{
+    N[k] <- sum(m)*(-1)
+    }
+  }
+  
+  M[i, ] <- N
+}
+
+modulePA <- t(M)
+Y <- data$Y
+modulePA <- cbind.data.frame(Y, modulePA)
+
+for(i in 2:ncol(modulePA)){
+  modulePA[is.na(modulePA[,i]), i] <- 0.001
+  modulePA[!is.finite(modulePA[,i]), i] <- 0.001
+  
+}
+
+# write.table(modulePA, file = "trans_Modules_LogBased_Pre_Variation2_New.txt", sep = "\t", row.names=F, quote = F)
+# write.table(modulePA, file = "trans_Modules_LogBased_Early_Variation2_New.txt", sep = "\t", row.names=F, quote = F)
+# write.table(modulePA, file = "trans_Modules_LogBased_Late_Variation2_New.txt", sep = "\t", row.names=F, quote = F)
+
+
+# write.table(modulePA, file = "trans_Modules_LogBased_Pre_Variation2.txt", sep = "\t", row.names=F, quote = F)
+# write.table(modulePA, file = "trans_Modules_LogBased_Early_Variation2.txt", sep = "\t", row.names=F, quote = F)
+# write.table(modulePA, file = "trans_Modules_LogBased_Late_Variation2.txt", sep = "\t", row.names=F, quote = F)
+
+
