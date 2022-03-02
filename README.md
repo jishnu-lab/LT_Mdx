@@ -1,4 +1,11 @@
 # Pediatric_LT_Mdx
+
+The Rscripts folder contains all the codes we used for the analysis
+
+The data is contained in the dataset folder
+
+
+
 Mdx liver transplant data
 1. calculateModuleStat_LogBased_Variation2.R
 -- This script calculates the module specific log-based score for each of the 555 modules
