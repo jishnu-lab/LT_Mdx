@@ -6,7 +6,7 @@ The data is contained in the dataset folder
 
 
 
-Mdx liver transplant data
+Mdx liver transplant codes:
 1. calculateModuleStat_LogBased_Variation2.R
 -- This script calculates the module specific log-based score for each of the 555 modules
 2. CV_LassoSVM_NetFeatures_LogBased_V0.R
